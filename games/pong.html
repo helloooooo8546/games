@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pong | Unblocked Games</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>Pong</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/games/snake.html">Snake</a>
+      <a href="/games/flappy.html">Flappy Square</a>
+    </nav>
+  </header>
+
+  <main class="game-wrap">
+    <div class="controls">
+      <span class="tag">Up/Down: Move</span>
+      <span class="tag">Space: Pause</span>
+      <span class="tag">R: Restart</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="game" width="760" height="480"></canvas>
+    </div>
+  </main>
+
+  <script>
+    const c = document.getElementById('game');
+    const x = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const PADDLE_W = 12, PADDLE_H = 80, BALL_R = 8;
+
+    const player = { x: 24, y: H/2 - PADDLE_H/2, vy: 0, score: 0 };
+    const cpu = { x: W - 24 - PADDLE_W, y: H/2 - PADDLE_H/2, score: 0 };
+    const ball = { x: W/2, y: H/2, vx: 4, vy: 2 };
+
+    let paused = false, running = true;
+
+    addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp') player.vy = -6;
+      else if (e.key === 'ArrowDown') player.vy = 6;
+      else if (e.key === ' ') paused = !paused;
+      else if (e.key.toLowerCase() === 'r') reset();
+    });
+    addEventListener('keyup', e => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') player.vy = 0;
+    });
+
+    function reset() {
+      player.y = H/2 - PADDLE_H/2; cpu.y = player.y;
+      player.score = 0; cpu.score = 0;
+      ball.x = W/2; ball.y = H/2;
+      ball.vx = (Math.random() < 0.5 ? -1 : 1) * 4;
+      ball.vy = (Math.random() * 2 + 1) * (Math.random() < 0.5 ? -1 : 1);
+      paused = false; running = true;
+    }
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function aiUpdate() {
+      const target = ball.y - PADDLE_H/2;
+      const diff = target - cpu.y;
+      cpu.y += clamp(diff, -4.2, 4.2);
+      cpu.y = clamp(cpu.y, 0, H - PADDLE_H);
+    }
+
+    function drawCourt() {
+      x.fillStyle = '#0b1123'; x.fillRect(0, 0, W, H);
+      x.strokeStyle = '#1d2140'; x.setLineDash([8, 12]);
+      x.beginPath(); x.moveTo(W/2, 0); x.lineTo(W/2, H); x.stroke
