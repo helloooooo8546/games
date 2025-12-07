@@ -106,24 +106,25 @@ body {
   color: var(--muted);
 }
 
-/* 🎮 Game canvas styling */
+/* 🎮 Game canvas styling — wider & girthier */
 .canvas-box {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 30px;                  /* more breathing room */
   background: var(--card);
-  border-radius: 12px;
-  box-shadow: 0 0 20px var(--glow);
+  border-radius: 16px;            /* chunkier corners */
+  box-shadow: 0 0 28px var(--glow);
   margin: 0 auto;
-  max-width: 100%;
+  max-width: 95%;                 /* allow wider stretch */
   overflow: auto;
 }
 
 canvas {
-  max-width: 100%;
+  width: 90%;                     /* stretch wider */
   height: auto;
-  border: 2px solid var(--accent2);
-  border-radius: 8px;
+  border: 4px solid var(--accent2); /* thicker border */
+  border-radius: 12px;            /* chunkier corners */
   background: #0d0d1a;
+  box-shadow: 0 0 20px rgba(255, 77, 109, 0.4); /* glow around canvas */
 }
