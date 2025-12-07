@@ -5,37 +5,59 @@
   --accent2: #7c5cff;
   --text: #f0f0f5;
   --muted: #b7b9d6;
+  --glow: rgba(124, 92, 255, 0.6);
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 body {
   margin: 0;
-  font-family: 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%);
+  font-family: 'Orbitron', sans-serif;
+  background: radial-gradient(circle at top left, #121234, #0d0d1a);
   color: var(--text);
 }
 
-header.site-header {
-  display: flex; justify-content: space-between; align-items: center;
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 16px 24px;
   background: #111122;
   border-bottom: 2px solid var(--accent2);
 }
-header h1 { margin: 0; font-size: 22px; color: var(--accent); }
-header nav a {
-  margin-left: 12px; color: var(--text);
-  text-decoration: none; font-weight: 500;
+.site-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--accent);
 }
-header nav a:hover { color: var(--accent2); }
+.site-header nav a {
+  margin-left: 12px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+}
+.site-header nav a:hover {
+  color: var(--accent2);
+}
 
-.container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
 
 .hero {
   text-align: center;
   margin-bottom: 32px;
 }
-.hero h2 { font-size: 28px; color: var(--accent2); }
-.hero p { color: var(--muted); }
+.hero h2 {
+  font-size: 28px;
+  color: var(--accent2);
+}
+.hero p {
+  color: var(--muted);
+}
 
 .grid {
   display: grid;
@@ -47,15 +69,20 @@ header nav a:hover { color: var(--accent2); }
   background: var(--card);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 0 12px rgba(124,92,255,0.4);
+  box-shadow: 0 0 12px var(--glow);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 0 20px rgba(255,77,109,0.6);
+  box-shadow: 0 0 20px rgba(255, 77, 109, 0.6);
 }
-.card h3 { margin-top: 0; color: var(--accent); }
-.card p { color: var(--muted); }
+.card h3 {
+  margin-top: 0;
+  color: var(--accent);
+}
+.card p {
+  color: var(--muted);
+}
 
 .btn {
   display: inline-block;
@@ -67,9 +94,11 @@ header nav a:hover { color: var(--accent2); }
   text-decoration: none;
   font-weight: bold;
 }
-.btn:hover { background: var(--accent); }
+.btn:hover {
+  background: var(--accent);
+}
 
-footer.site-footer {
+.site-footer {
   text-align: center;
   padding: 20px;
   background: #111122;
