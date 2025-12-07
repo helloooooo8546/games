@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flappy Square | Unblocked Games Arcade</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>🕹️ Flappy Square</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/games/snake.html">Snake</a>
+      <a href="/games/pong.html">Pong</a>
+      <a href="/games/breakout.html">Breakout</a>
+      <a href="/games/2048.html">2048</a>
+      <a href="/games/tetris.html">Tetris</a>
+    </nav>
+  </header>
+
+  <main class="game-wrap">
+    <div class="controls">
+      <span class="tag">Space: Flap</span>
+      <span class="tag">R: Restart</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="game" width="420" height="640"></canvas>
+    </div>
+  </main>
+
+  <script>
+    const c = document.getElementById('game');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+
+    const gravity = 0.35;
+    const flap = -7.5;
+    let player, pipes, score, alive, started, pipeTimer;
+
+    function reset() {
+      player = { x: 80, y: H/2, vy: 0, w: 26, h: 26 };
+      pipes = [];
+      score = 0;
+      alive = true;
+      started = false;
+      pipeTimer = 0;
+    }
+
+    function spawnPipe() {
+      const gap = 140;
+      const minY = 80, maxY = H - 80 - gap;
+      const topH = Math.floor(Math.random() * (maxY - minY)) + minY;
+      const bottomY = topH + gap;
+      pipes.push({
+        x: W + 40, w: 52,
+        top: { y: 0, h: topH },
+        bottom: { y: bottomY, h: H - bottomY },
+        passed: false
+      });
+    }
+
+    function collides(a, b) {
+      return a.x < b.x + b.w && a.x + a.w > b.x &&
+             a.y < b.y + b.h && a.y + a.h > b.y;
+    }
+
+    function step() {
+      requestAnimationFrame(step);
+
+      if (alive && started) {
+        player.vy += gravity;
+        player.y += player.vy;
+
+        pipeTimer++;
+        if (pipeTimer > 100) {
+          pipeTimer = 0;
+          spawnPipe();
+        }
+
+        pipes.forEach(p => p.x -= 2.6);
+        pipes = pipes.filter(p => p.x + p.w > -20);
+
+        pipes.forEach(p => {
+          if (!p.passed && p.x + p.w < player.x) {
+            score++;
+            p.passed = true;
+          }
+          const topRect = { x: p.x, y: p.top.y, w: p.w, h: p.top.h };
+          const botRect = { x: p.x, y: p.bottom.y, w: p.w, h: p.bottom.h };
+          if (collides(player, topRect) || collides(player, botRect)) alive = false;
+        });
+
+        if (player.y + player.h > H || player.y < 0) alive = false;
+      }
+
+      draw();
+    }
+
+    function draw() {
+      ctx.fillStyle = '#0b1123';
+      ctx.fillRect(0, 0, W, H);
+
+      // background stars
+      ctx.fillStyle = '#1f2347';
+      for (let i = 0; i < 120; i++) {
+        const sx = (i * 37 + (performance.now()/50)) % W;
+        const sy = (i * 71) % H;
+        ctx.fillRect(sx, sy, 2, 2);
+      }
+
+      // pipes
+      pipes.forEach(p => {
+        ctx.fillStyle = '#28c76f';
+        ctx.fillRect(p.x, p.top.y, p.w, p.top.h);
+        ctx.fillRect(p.x, p.bottom.y, p.w, p.bottom.h);
+      });
+
+      // player
+      ctx.fillStyle = '#ff4d6d';
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+
+      // score
+      ctx.fillStyle = '#e9e9f1';
+      ctx.font = 'bold 28px Orbitron, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(score, W/2, 46);
+
+      if (!started && alive) {
+        ctx.font = 'bold 22px Orbitron, sans-serif';
+        ctx.fillText('Press Space to start', W/2, H/2);
+      }
+
+      if (!alive) {
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(0,0,W,H);
+        ctx.fillStyle = '#e9e9f1';
+        ctx.font = 'bold 26px Orbitron, sans-serif';
+        ctx.fillText(`Game Over — Score ${score}`, W/2, H/2 - 20);
+        ctx.font = 'bold 20px Orbitron, sans-serif';
+        ctx.fillText('Press R to restart', W/2, H/2 + 18);
+      }
+    }
+
+    addEventListener('keydown', e => {
+      if (e.key === ' ') {
+        started = true;
+        if (alive) player.vy = flap;
+      } else if (e.key.toLowerCase() === 'r') {
+        reset();
+      }
+    });
+
+    reset();
+    step();
+  </script>
+</body>
+</html>
