@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>2048 | Unblocked Games</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>2048</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/games/snake.html">Snake</a>
+      <a href="/games/pong.html">Pong</a>
+      <a href="/games/flappy.html">Flappy Square</a>
+    </nav>
+  </header>
+
+  <main class="game-wrap">
+    <div class="controls">
+      <span class="tag">Arrow keys: Move tiles</span>
+      <span class="tag">R: Restart</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="game" width="400" height="400"></canvas>
+    </div>
+  </main>
+
+  <script>
+    const c=document.getElementById('game');const ctx=c.getContext('2d');
+    const size=4;let grid=[];let alive=true;
+    function init(){grid=Array(size).fill().map(()=>Array(size).fill(0));spawn();spawn();}
+    function spawn(){let empty=[];for(let r=0;r<size;r++)for(let c2=0;c2<size;c2++)if(!grid[r][c2])empty.push([r,c2]);
+      if(empty.length){let [r,c2]=empty[Math.floor(Math.random()*empty.length)];grid[r][c2]=Math.random()<0.9?2:4;}}
+    function slide(row){row=row.filter(v=>v);for(let i=0;i<row.length-1;i++){if(row[i]===row[i+1]){row[i]*=2;row[i+1]=0;}}row=row.filter(v=>v);while(row.length<size)row.push(0);return row;}
+    function move(dir){let old=JSON.stringify(grid);for(let r=0;r<size;r++){let row=grid[r];if(dir==='left')grid[r]=slide(row);if(dir==='right')grid[r]=slide(row.reverse()).reverse();}
+      if(dir==='up'){for(let c2=0;c2<size;c2++){let col=grid.map(r=>r[c2]);col=slide(col);for(let r=0;r<size;r++)grid[r][c2]=col[r];}}
+      if(dir==='down'){for(let c2=0;c2<size;c2++){let col=grid.map(r=>r[c2]).reverse();col=slide(col);col.reverse();for(let r=0;r<size;r++)grid[r][c2]=col[r];}}
+      if(JSON.stringify(grid)!==old)spawn();}
+    addEventListener('keydown',e=>{if(e.key==='ArrowLeft')move('left');if(e.key==='ArrowRight')move('right');if(e.key==='ArrowUp')move('up');if(e.key==='ArrowDown')move('down');if(e.key.toLowerCase()==='r')init();draw();});
+    function draw(){ctx.fillStyle='#0b1123';ctx.fillRect(0,0,400,400);ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 24px system-ui';
+      for(let r=0;r<size;r++)for(let c2=0;c2<size;c2++){ctx.fillStyle='#171a31';ctx.fillRect(c2*100+5,r*100+5,90,90);if(grid[r][c2]){ctx.fillStyle='#e9e9f1';ctx.fillText(grid[r][c2],c2*100+50,r*100+50);}}}
+    init();draw();
+  </script>
+</body>
+</html>
