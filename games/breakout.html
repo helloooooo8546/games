@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Breakout | Unblocked Games</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>Breakout</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/games/snake.html">Snake</a>
+      <a href="/games/pong.html">Pong</a>
+      <a href="/games/flappy.html">Flappy Square</a>
+    </nav>
+  </header>
+
+  <main class="game-wrap">
+    <div class="controls">
+      <span class="tag">Arrow keys: Move paddle</span>
+      <span class="tag">R: Restart</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="game" width="640" height="480"></canvas>
+    </div>
+  </main>
+
+  <script>
+    const c = document.getElementById('game');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+
+    const paddle = { w: 100, h: 12, x: W/2 - 50, y: H - 30, vx: 0 };
+    const ball = { x: W/2, y: H/2, r: 8, vx: 4, vy: -4 };
+    const rows = 5, cols = 10, brickW = 60, brickH = 20;
+    let bricks = [];
+    let alive = true;
+
+    function initBricks() {
+      bricks = [];
+      for (let r=0;r<rows;r++) {
+        for (let c=0;c<cols;c++) {
+          bricks.push({ x: c*brickW+40, y: r*brickH+40, w: brickW-4, h: brickH-4, hit:false });
+        }
+      }
+    }
+    initBricks();
+
+    addEventListener('keydown', e=>{
+      if(e.key==='ArrowLeft') paddle.vx=-6;
+      if(e.key==='ArrowRight') paddle.vx=6;
+      if(e.key.toLowerCase()==='r') reset();
+    });
+    addEventListener('keyup', e=>{
+      if(e.key==='ArrowLeft'||e.key==='ArrowRight') paddle.vx=0;
+    });
+
+    function reset(){
+      paddle.x=W/2-50; paddle.vx=0;
+      ball.x=W/2; ball.y=H/2; ball.vx=4; ball.vy=-4;
+      alive=true; initBricks();
+    }
+
+    function step(){
+      requestAnimationFrame(step);
+      if(!alive) return;
+      paddle.x+=paddle.vx;
+      paddle.x=Math.max(0,Math.min(W-paddle.w,paddle.x));
+      ball.x+=ball.vx; ball.y+=ball.vy;
+
+      if(ball.x<ball.r||ball.x>W-ball.r) ball.vx*=-1;
+      if(ball.y<ball.r) ball.vy*=-1;
+      if(ball.y>H-ball.r){alive=false;}
+
+      if(ball.x>paddle.x && ball.x<paddle.x+paddle.w && ball.y+ball.r>paddle.y){
+        ball.vy=-Math.abs(ball.vy);
+      }
+
+      bricks.forEach(b=>{
+        if(!b.hit && ball.x> b.x && ball.x< b.x+b.w && ball.y-ball.r< b.y+b.h && ball.y+ball.r> b.y){
+          b.hit=true; ball.vy*=-1;
+        }
+      });
+
+      draw();
+    }
+
+    function draw(){
+      ctx.fillStyle='#0b1123'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#7c5cff'; ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
+      ctx.fillStyle='#ffeb3b'; ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
+      bricks.forEach(b=>{
+        if(!b.hit){ctx.fillStyle='#28c76f'; ctx.fillRect(b.x,b.y,b.w,b.h);}
+      });
+      if(!alive){
+        ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,W,H);
+        ctx.fillStyle='#e9e9f1'; ctx.font='bold 28px system-ui'; ctx.textAlign='center';
+        ctx.fillText('Game Over — Press R',W/2,H/2);
+      }
+    }
+    step();
+  </script>
+</body>
+</html>
