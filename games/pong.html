@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pong | Unblocked Games Arcade</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>🏓 Pong</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/games/snake.html">Snake</a>
+      <a href="/games/flappy.html">Flappy</a>
+      <a href="/games/breakout.html">Breakout</a>
+      <a href="/games/2048.html">2048</a>
+      <a href="/games/tetris.html">Tetris</a>
+    </nav>
+  </header>
+
+  <main class="game-wrap">
+    <div class="controls">
+      <span class="tag">⬆️ Up / ⬇️ Down: Move</span>
+      <span class="tag">Space: Pause</span>
+      <span class="tag">R: Restart</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="game" width="760" height="480"></canvas>
+    </div>
+  </main>
+
+  <script>
+    const c = document.getElementById('game');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+
+    const PADDLE_W = 12, PADDLE_H = 80, BALL_R = 8;
+    const player = { x: 24, y: H/2 - PADDLE_H/2, vy: 0, score: 0 };
+    const cpu = { x: W - 24 - PADDLE_W, y: H/2 - PADDLE_H/2, score: 0 };
+    const ball = { x: W/2, y: H/2, vx: 4, vy: 2 };
+
+    let paused = false, running = true;
+
+    addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp') player.vy = -6;
+      else if (e.key === 'ArrowDown') player.vy = 6;
+      else if (e.key === ' ') paused = !paused;
+      else if (e.key.toLowerCase() === 'r') reset();
+    });
+    addEventListener('keyup', e => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') player.vy = 0;
+    });
+
+    function reset() {
+      player.y = H/2 - PADDLE_H/2; cpu.y = player.y;
+      player.score = 0; cpu.score = 0;
+      ball.x = W/2; ball.y = H/2;
+      ball.vx = (Math.random() < 0.5 ? -1 : 1) * 4;
+      ball.vy = (Math.random() * 2 + 1) * (Math.random() < 0.5 ? -1 : 1);
+      paused = false; running = true;
+    }
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function aiUpdate() {
+      const target = ball.y - PADDLE_H/2;
+      const diff = target - cpu.y;
+      cpu.y += clamp(diff, -4.2, 4.2);
+      cpu.y = clamp(cpu.y, 0, H - PADDLE_H);
+    }
+
+    function drawCourt() {
+      ctx.fillStyle = '#0b1123';
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.strokeStyle = '#7c5cff';
+      ctx.setLineDash([8, 12]);
+      ctx.beginPath();
+      ctx.moveTo(W/2, 0);
+      ctx.lineTo(W/2, H);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#f0f0f5';
+      ctx.font = 'bold 24px Orbitron, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(player.score, W/2 - 40, 34);
+      ctx.fillText(cpu.score, W/2 + 40, 34);
+    }
+
+    function step() {
+      requestAnimationFrame(step);
+      if (paused || !running) return;
+
+      player.y = clamp(player.y + player.vy, 0, H - PADDLE_H);
+      aiUpdate();
+
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      if (ball.y < BALL_R || ball.y > H - BALL_R) ball.vy *= -1;
+
+      const hitPlayer = ball.x - BALL_R < player.x + PADDLE_W &&
+                        ball.y > player.y && ball.y < player.y + PADDLE_H;
+      const hitCpu = ball.x + BALL_R > cpu.x &&
+                     ball.y > cpu.y && ball.y < cpu.y + PADDLE_H;
+
+      if (hitPlayer) {
+        ball.vx = Math.abs(ball.vx);
+        const off = (ball.y - (player.y + PADDLE_H/2)) / (PADDLE_H/2);
+        ball.vy = off * 5;
+      }
+      if (hitCpu) {
+        ball.vx = -Math.abs(ball.vx);
+        const off = (ball.y - (cpu.y + PADDLE_H/2)) / (PADDLE_H/2);
+        ball.vy = off * 5;
+      }
+
+      if (ball.x < -20) {
+        cpu.score++;
+        resetBall(4);
+      } else if (ball.x > W + 20) {
+        player.score++;
+        resetBall(-4);
+      }
+
+      drawCourt();
+      ctx.fillStyle = '#ff4d6d';
+      ctx.fillRect(player.x, player.y, PADDLE_W, PADDLE_H);
+
+      ctx.fillStyle = '#28c76f';
+      ctx.fillRect(cpu.x, cpu.y, PADDLE_W, PADDLE_H);
+
+      ctx.fillStyle = '#ffeb3b';
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (player.score >= 7 || cpu.score >= 7) {
+        running = false;
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(0,0,W,H);
+        ctx.fillStyle = '#e9e9f1';
+        ctx.font = 'bold 28px Orbitron, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText((player.score > cpu.score ? 'You win!' : 'CPU wins!') + ' — Press R', W/2, H/2);
+      }
+    }
+
+    function resetBall(vx) {
+      ball.x = W/2; ball.y = H/2;
+      ball.vx = vx;
+      ball.vy = (Math.random() * 2 + 1) * (Math.random() < 0.5 ? -1 : 1);
+    }
+
+    drawCourt();
+    step();
+  </script>
+</body>
+</html>
