@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tetris | Unblocked Games</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>Tetris</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/games/snake.html">Snake</a>
+      <a href="/games/pong.html">Pong</a>
+      <a href="/games/flappy.html">Flappy Square</a>
+      <a href="/games/breakout.html">Breakout</a>
+      <a href="/games/2048.html">2048</a>
+    </nav>
+  </header>
+
+  <main class="game-wrap">
+    <div class="controls">
+      <span class="tag">Arrow keys: Move</span>
+      <span class="tag">Up: Rotate</span>
+      <span class="tag">Space: Drop</span>
+      <span class="tag">R: Restart</span>
+    </div>
+    <div class="canvas-box">
+      <canvas id="game" width="240" height="400"></canvas>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const COLS = 10, ROWS = 20, BLOCK = 20;
+    let board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+    let piece, nextPiece, dropCounter=0, dropInterval=30, frame=0, alive=true;
+
+    const shapes = [
+      [[1,1,1,1]], // I
+      [[1,1],[1,1]], // O
+      [[0,1,0],[1,1,1]], // T
+      [[1,1,0],[0,1,1]], // S
+      [[0,1,1],[1,1,0]], // Z
+      [[1,0,0],[1,1,1]], // J
+      [[0,0,1],[1,1,1]]  // L
+    ];
+    const colors = ['#7c5cff','#ff4d6d','#28c76f','#54d6ff','#ffeb3b','#ff9800','#9c27b0'];
+
+    function newPiece(){
+      const id=Math.floor(Math.random()*shapes.length);
+      return {shape:shapes[id],color:colors[id],x:3,y:0};
+    }
+    function reset(){
+      board=Array.from({length:ROWS},()=>Array(COLS).fill(0));
+      piece=newPiece(); nextPiece=newPiece();
+      alive=true; frame=0;
+    }
+    reset();
+
+    function collide(p){
+      for(let r=0;r<p.shape.length;r++){
+        for(let c=0;c<p.shape[r].length;c++){
+          if(p.shape[r][c]){
+            let x=p.x+c,y=p.y+r;
+            if(x<0||x>=COLS||y>=ROWS||board[y][x]) return true;
+          }
+        }
+      }
+      return false;
+    }
+    function merge(p){
+      p.shape.forEach((row,r)=>{
+        row.forEach((val,c)=>{
+          if(val){board[p.y+r][p.x+c]=p.color;}
+        });
+      });
+    }
+    function rotate(p){
+      const s=p.shape.map((row,i)=>row.map((_,j)=>p.shape[p.shape.length-1-j][i]));
+      const old=p.shape; p.shape=s;
+      if(collide(p)) p.shape=old;
+    }
+    function clearLines(){
+      for(let y=ROWS-1;y>=0;y--){
+        if(board[y].every(v=>v)){
+          board.splice(y,1);
+          board.unshift(Array(COLS).fill(0));
+          y++;
+        }
+      }
+    }
+    function drop(){
+      piece.y++;
+      if(collide(piece)){
+        piece.y--;
+        merge(piece);
+        clearLines();
+        piece=nextPiece; nextPiece=newPiece();
+        if(collide(piece)) alive=false;
+      }
+      dropCounter=0;
+    }
+    function draw(){
+      ctx.fillStyle='#0b1123'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      board.forEach((row,y)=>{
+        row.forEach((val,x)=>{
+          if(val){ctx.fillStyle=val;ctx.fillRect(x*BLOCK,y*BLOCK,BLOCK,BLOCK);}
+        });
+      });
+      piece.shape.forEach((row,r)=>{
+        row.forEach((val,c)=>{
+          if(val){ctx.fillStyle=piece.color;ctx.fillRect((piece.x+c)*BLOCK,(piece.y+r)*BLOCK,BLOCK,BLOCK);}
+        });
+      });
+      if(!alive){
+        ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle='#e9e9f1'; ctx.font='bold 24px system-ui'; ctx.textAlign='center';
+        ctx.fillText('Game Over — Press R',canvas.width/2,canvas.height/2);
+      }
+    }
+    function update(){
+      frame++;
+      if(frame%dropInterval===0 && alive) drop();
+      draw();
+      requestAnimationFrame(update);
+    }
+    update();
+
+    addEventListener('keydown',e=>{
+      if(!alive && e.key.toLowerCase()==='r'){reset();return;}
+      if(!alive) return;
+      if(e.key==='ArrowLeft'){piece.x--; if(collide(piece)) piece.x++;}
+      if(e.key==='ArrowRight'){piece.x++; if(collide(piece)) piece.x--;}
+      if(e.key==='ArrowDown'){drop();}
+      if(e.key==='ArrowUp'){rotate(piece);}
+      if(e.key===' '){while(!collide(piece)){piece.y++;}piece.y--;merge(piece);clearLines();piece=nextPiece;nextPiece=newPiece();if(collide(piece)) alive=false;}
+    });
+  </script>
+</body>
+</html>
